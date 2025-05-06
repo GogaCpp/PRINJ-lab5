@@ -1,0 +1,76 @@
+version: '3.8'
+
+services:
+  postgres:
+    container_name: postgres
+    image: postgres
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: 1234
+      POSTGRES_DB: test
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./user/scripts:/docker-entrypoint-initdb.d/user
+      - ./chat/scripts:/docker-entrypoint-initdb.d/chat
+    networks:
+      - mynet
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d test"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  mongo:
+    container_name: test-mongo
+    image: mongo:latest
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+      MONGO_INITDB_DATABASE: test
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - mynet
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh -u root -p example --quiet | grep 1
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  user-service:
+    container_name: user-service
+    build:
+      context: .
+      dockerfile: user/Dockerfile
+    ports:
+      - "8001:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - mynet
+
+  chat-service:
+    container_name: chat-service
+    build:
+      context: .
+      dockerfile: chat/Dockerfile
+    ports:
+      - "8002:8000"
+    depends_on:
+      mongo:
+        condition: service_healthy
+    networks:
+      - mynet
+
+networks:
+  mynet:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  mongo_data:
