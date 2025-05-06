@@ -23,10 +23,9 @@ class UserService():
         self._session = session
 
     async def get_user_by_id(self, id: uuid.UUID):
-        user = await self._redis_service.get_cached_user(str(id))
-        if user is not None:
-            print(1)
-            return user
+        # user = await self._redis_service.get_cached_user(str(id))
+        # if user is not None:
+        #     return user
         query = (
             select(User)
             .where(
