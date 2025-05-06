@@ -19,6 +19,11 @@ class Settings(BaseSettings):
     algorithm: str
     secret_key: str
 
+    redis_host: str
+    redis_port: int
+    redis_password: str
+    redis_db: int
+
     @property
     def db_url(self):
         return f"postgresql+asyncpg://{self.db_user}:{self.db_password}@{self.db_host}:{self.db_port}/{self.db_name}"

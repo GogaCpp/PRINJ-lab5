@@ -15,7 +15,7 @@ async def get_list(
     return await user_service.get_user_list()
 
 
-@router.get("/{user_id}", response_model=BaseUser)
+@router.get("/{user_id}")
 async def get_user(
     user_id: uuid.UUID,
     user_service: UserService = Depends(),
